@@ -1,0 +1,195 @@
+.cube-section {
+  background: var(--bg);
+  padding: 108px 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 52px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Subtle background radial */
+.cube-section::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.cube-section-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.cube-heading {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 600;
+  color: var(--white);
+}
+.cube-heading em { font-style: italic; color: var(--gold); }
+
+.cube-sub {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--white-dim);
+  text-transform: uppercase;
+}
+
+/* 3D SCENE */
+.cube-scene-wrap {
+  --cube-size: 480px;
+  --cube-half: calc(var(--cube-size) / 2);
+  --cube-scale-x: 1.55;
+  position: relative;
+  width: calc(var(--cube-size) * 1.55);
+  height: calc(var(--cube-size) + 130px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.cube-scene {
+  perspective: 1100px;
+  perspective-origin: 50% 45%;
+  width: var(--cube-size);
+  height: var(--cube-size);
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.cube {
+  width: var(--cube-size);
+  height: var(--cube-size);
+  transform-style: preserve-3d;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.cube-face {
+  position: absolute;
+  width: var(--cube-size);
+  height: var(--cube-size);
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(201,168,76,0.2);
+  backface-visibility: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04),
+    0 30px 80px rgba(0,0,0,0.8),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.cube-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.cube-face-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(5,5,5,0.7) 100%
+  );
+}
+
+.cube-face-label {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--white);
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+/* FLOOR REFLECTION */
+.cube-floor {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(var(--cube-size) * 1.62);
+  height: 80px;
+  background: linear-gradient(to bottom, rgba(201,168,76,0.04) 0%, transparent 100%);
+  filter: blur(20px);
+  border-radius: 50%;
+}
+
+/* AMBIENT GLOW */
+.cube-glow {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(var(--cube-size) * 1.2);
+  height: 40px;
+  background: rgba(201,168,76,0.15);
+  filter: blur(40px);
+  border-radius: 50%;
+}
+
+/* INDICATORS */
+.cube-indicators {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cube-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cube-indicator-type {
+  font-size: 8px;
+  color: var(--gold);
+}
+.cube-indicator-label {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--white-dim);
+  text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+  .cube-scene-wrap {
+    --cube-size: 400px;
+    --cube-scale-x: 1.45;
+    width: calc(var(--cube-size) * 1.5);
+    height: calc(var(--cube-size) + 100px);
+  }
+}
+
+@media (max-width: 600px) {
+  .cube-section { padding: 72px 20px; }
+  .cube-scene-wrap {
+    --cube-size: 280px;
+    --cube-scale-x: 1.35;
+    width: calc(var(--cube-size) * 1.42);
+    height: calc(var(--cube-size) + 80px);
+  }
+}

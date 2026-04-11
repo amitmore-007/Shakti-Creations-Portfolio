@@ -1,0 +1,271 @@
+/* ─── RESET & BASE ─────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:        #000000;
+  --bg-2:      #020202;
+  --bg-3:      #050505;
+  --surface:   #0a0a0a;
+  --border:    rgba(255, 255, 255, 0.14);
+  --gold:      #f2f2f2;
+  --gold-dim:  #7a7a7a;
+  --white:     #ffffff;
+  --white-dim: rgba(255, 255, 255, 0.68);
+  --font-display: 'Sora', sans-serif;
+  --font-body:    'Manrope', sans-serif;
+  --font-label:   'Space Grotesk', sans-serif;
+  --ease-smooth: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --cursor-x: 50vw;
+  --cursor-y: 50vh;
+}
+
+html {
+  scroll-behavior: auto; /* lenis handles this */
+  font-size: 15px;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.6;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.02em;
+}
+
+/* ─── CURSOR AURA ───────────────────────────────────────── */
+.cursor-aura {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9996;
+  opacity: 0;
+  mix-blend-mode: screen;
+  transition: opacity 220ms ease;
+  background-image:
+    radial-gradient(
+      220px circle at var(--cursor-x) var(--cursor-y),
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0.08) 28%,
+      rgba(255, 255, 255, 0.02) 52%,
+      transparent 74%
+    ),
+    radial-gradient(
+      480px circle at calc(var(--cursor-x) + 36px) calc(var(--cursor-y) + 24px),
+      rgba(130, 130, 130, 0.12) 0%,
+      transparent 72%
+    );
+}
+
+body.cursor-aura-active .cursor-aura {
+  opacity: 0.45;
+}
+
+/* ─── SCROLLBAR ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+
+/* ─── SELECTION ─────────────────────────────────────────── */
+::selection { background: var(--gold); color: var(--bg); }
+
+/* ─── UTILITY ───────────────────────────────────────────── */
+.section-label {
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  color: var(--gold);
+  text-transform: uppercase;
+  animation: label-glow 4.5s ease-in-out infinite;
+}
+
+@keyframes label-glow {
+  0%, 100% { opacity: 0.8; text-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+  50% { opacity: 1; text-shadow: 0 0 14px rgba(255, 255, 255, 0.22); }
+}
+
+.clip-text {
+  overflow: hidden;
+  display: block;
+}
+
+.deferred-section-placeholder {
+  width: 100%;
+  background: linear-gradient(180deg, rgba(4, 4, 4, 0.5) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+img, video {
+  display: block;
+  max-width: 100%;
+}
+
+a { color: inherit; text-decoration: none; }
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .cursor-aura {
+    display: none;
+  }
+}
+
+/* ─── LENIS SMOOTH SCROLL ───────────────────────────────── */
+html.lenis {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ─── NOISE OVERLAY ─────────────────────────────────────── */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9997;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* ─── PAGE TRANSITION ───────────────────────────────────── */
+.page-loader {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% 28%, #171717 0%, #080808 34%, #000000 72%);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 18px;
+  overflow: hidden;
+}
+
+.loader-bg-glow {
+  position: absolute;
+  width: min(68vw, 760px);
+  height: min(68vw, 760px);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 38%, transparent 72%);
+  filter: blur(26px);
+  pointer-events: none;
+}
+
+.loader-mark-wrap {
+  position: relative;
+  width: 144px;
+  height: 144px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader-mark-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.loader-ring-outer {
+  border: 1px solid rgba(255,255,255,0.22);
+}
+
+.loader-ring-inner {
+  inset: 14px;
+  border: 1px dashed rgba(255,255,255,0.45);
+}
+
+.loader-mark-core {
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #1e1e1e, #080808);
+  border: 1px solid rgba(255,255,255,0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+}
+
+.loader-initials {
+  font-family: var(--font-label);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--white);
+  margin-left: 0.12em;
+}
+
+.loader-title-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.loader-text {
+  font-family: var(--font-label);
+  font-size: clamp(1.3rem, 3.6vw, 2.25rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--white);
+  letter-spacing: 0.16em;
+}
+
+.loader-sub {
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.58);
+}
+
+.loader-bar-wrap {
+  width: min(76vw, 300px);
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.loader-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #7b7b7b 0%, #f2f2f2 55%, #ffffff 100%);
+  width: 0%;
+  transition: width 0.05s linear;
+}
+
+.loader-progress {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  color: var(--gold);
+  margin-top: 2px;
+}

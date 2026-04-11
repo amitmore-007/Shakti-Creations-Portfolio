@@ -1,0 +1,7 @@
+.scroll-reveal-panel {
+  position: relative;
+  z-index: 2;
+  will-change: clip-path;
+  /* Panels stack on top of each other as you scroll */
+  margin-top: -2px; /* prevent 1px gap between sections */
+}
