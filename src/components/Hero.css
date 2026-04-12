@@ -207,8 +207,38 @@
 
 /* RESPONSIVE */
 @media (max-width: 900px) {
-  .hero { padding: 0 24px 52px; }
+  .hero {
+    min-height: 660px;
+    padding: 0 24px 52px;
+  }
+  .hero-content { max-width: 100%; }
+  .hero-heading {
+    font-size: clamp(1.9rem, 11.5vw, 3.8rem);
+    line-height: 0.92;
+  }
+  .hero-sub { max-width: min(94vw, 460px); }
+  .hero-label-wrap { gap: 12px; }
+  .hero-label-line { width: 36px; }
   .hero-scroll-indicator { right: 20px; bottom: 52px; }
   .hero-corner-info { display: none; }
   .hero-ctas { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 560px) {
+  .hero {
+    min-height: 620px;
+    padding: 0 16px 40px;
+  }
+  .hero-heading {
+    font-size: clamp(1.6rem, 10vw, 2.7rem);
+    line-height: 0.94;
+  }
+  .hero-sub {
+    font-size: 0.9rem;
+    max-width: 92vw;
+  }
+  .hero-scroll-indicator {
+    right: 12px;
+    bottom: 40px;
+  }
 }

@@ -64,6 +64,7 @@ export default function CardGallery() {
   });
   const hasAnimatedIn = useRef(false);
   const introTlRef = useRef(null);
+  const mobileTlRef = useRef(null);
 
   const getEntryState = useCallback((i) => {
     const pos = FAN_POSITIONS[i];
@@ -117,7 +118,39 @@ export default function CardGallery() {
         rotate: 0,
         scale: 1,
         opacity: 1,
+        force3D: true,
       });
+    });
+  }, []);
+
+  const prepareMobileCards = useCallback(() => {
+    cardsRef.current.forEach((card, i) => {
+      if (!card) return;
+      gsap.killTweensOf(card);
+      gsap.set(card, {
+        x: i % 2 === 0 ? -72 : 72,
+        y: 0,
+        rotate: 0,
+        scale: 1,
+        opacity: 0,
+        force3D: true,
+      });
+    });
+  }, []);
+
+  const animateMobileCardsIn = useCallback(() => {
+    const cards = cardsRef.current.filter(Boolean);
+    if (!cards.length) return;
+
+    mobileTlRef.current?.kill();
+    mobileTlRef.current = gsap.to(cards, {
+      x: 0,
+      opacity: 1,
+      duration: 0.56,
+      stagger: 0.09,
+      ease: "power3.out",
+      overwrite: "auto",
+      force3D: true,
     });
   }, []);
 
@@ -144,7 +177,7 @@ export default function CardGallery() {
   const animateIn = useCallback(() => {
     if (hasAnimatedIn.current) return;
     if (isMobileLayout) {
-      setMobileCardState();
+      animateMobileCardsIn();
       return;
     }
 
@@ -193,7 +226,7 @@ export default function CardGallery() {
         0.45 + i * 0.05,
       );
     });
-  }, [getEntryState, isMobileLayout, setMobileCardState]);
+  }, [animateMobileCardsIn, getEntryState, isMobileLayout]);
 
   useEffect(() => {
     if (isMobileLayout) {
@@ -201,9 +234,28 @@ export default function CardGallery() {
       setHoveredId(null);
       setFocusedId(null);
       introTlRef.current?.kill();
-      setMobileCardState();
-      return undefined;
+      mobileTlRef.current?.kill();
+      prepareMobileCards();
+
+      const mobileTrigger = ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top 90%",
+        once: true,
+        onEnter: animateMobileCardsIn,
+      });
+
+      if (ScrollTrigger.isInViewport(sectionRef.current, 0.2)) {
+        animateMobileCardsIn();
+      }
+
+      return () => {
+        mobileTrigger.kill();
+        mobileTlRef.current?.kill();
+      };
     }
+
+    mobileTlRef.current?.kill();
+    setMobileCardState();
 
     cardsRef.current.forEach((card, i) => {
       if (!card) return;
@@ -240,7 +292,14 @@ export default function CardGallery() {
       headerAnim.scrollTrigger?.kill();
       headerAnim.kill();
     };
-  }, [animateIn, getEntryState, isMobileLayout, setMobileCardState]);
+  }, [
+    animateIn,
+    animateMobileCardsIn,
+    getEntryState,
+    isMobileLayout,
+    prepareMobileCards,
+    setMobileCardState,
+  ]);
 
   const handleHover = (id) => {
     if (isMobileLayout || focusedId) return;
@@ -387,7 +446,7 @@ export default function CardGallery() {
         </h2>
         <p className="gallery-sub" data-text-fx>
           {isMobileLayout
-            ? "Scroll through featured projects"
+            ? "Cards enter alternately from left and right"
             : "Hover to preview · Click to focus · Click again to dismiss"}
         </p>
       </div>
@@ -407,13 +466,17 @@ export default function CardGallery() {
               ${focusedId === card.id ? "focused" : ""}
               ${focusedId && focusedId !== card.id ? "bg-dimmed" : ""}
             `}
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              marginLeft: "-140px",
-              marginTop: "-200px",
-            }}
+            style={
+              isMobileLayout
+                ? undefined
+                : {
+                    position: "absolute",
+                    left: "50%",
+                    top: "50%",
+                    marginLeft: "-140px",
+                    marginTop: "-200px",
+                  }
+            }
             onMouseEnter={
               isMobileLayout ? undefined : () => handleHover(card.id)
             }
@@ -464,7 +527,7 @@ export default function CardGallery() {
 
       <p className="gallery-hint">
         {isMobileLayout
-          ? "8 featured projects"
+          ? "Scroll down to see all 8 featured projects"
           : focusedId
             ? "Click anywhere to close · or click another card"
             : "8 works in the deck"}
