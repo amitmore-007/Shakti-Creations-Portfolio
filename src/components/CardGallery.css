@@ -92,39 +92,34 @@
   will-change: transform, opacity;
   transform: translateZ(0);
   backface-visibility: hidden;
-  transition:
-    filter 0.4s ease,
-    box-shadow 0.4s ease;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+  transition: transform 0.38s var(--ease-smooth), opacity 0.3s ease, box-shadow 0.34s ease;
+  box-shadow: 0 16px 44px rgba(0,0,0,0.62);
 }
 
 .gallery-card:hover {
-  box-shadow: 0 40px 100px rgba(0,0,0,0.9), 0 0 30px rgba(201,168,76,0.15);
+  box-shadow: 0 28px 74px rgba(0,0,0,0.78), 0 0 22px rgba(201,168,76,0.12);
 }
 
 .gallery-card.dimmed {
-  filter: grayscale(1) brightness(0.6);
+  opacity: 0.88;
 }
 
 .gallery-card.focused {
-  width: 328px;
-  height: 466px;
   z-index: 50 !important;
   border-radius: 16px;
   box-shadow:
-    0 60px 120px rgba(0,0,0,0.95),
-    0 0 60px rgba(201,168,76,0.2),
+    0 44px 96px rgba(0,0,0,0.9),
+    0 0 42px rgba(201,168,76,0.16),
     0 0 0 1px rgba(201,168,76,0.3);
-  filter: none !important;
+  opacity: 1;
 }
 
 .gallery-card.focused .gallery-card-img {
-  transform: scale(1.03);
-  filter: brightness(1.14) contrast(1.08) saturate(1.04);
+  transform: scale(1.025);
 }
 
 .gallery-card.bg-dimmed {
-  filter: grayscale(0.45) brightness(0.62) !important;
+  opacity: 0.58 !important;
 }
 
 /* CARD INNER */
@@ -142,10 +137,18 @@
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
-  transition: transform 0.6s var(--ease-smooth);
+  transition: transform 0.45s var(--ease-smooth), filter 0.24s ease;
 }
 .gallery-card:hover .gallery-card-img {
   transform: scale(1.05);
+}
+
+.gallery-card.dimmed .gallery-card-img {
+  filter: grayscale(1) brightness(0.67) contrast(0.94);
+}
+
+.gallery-card.bg-dimmed .gallery-card-img {
+  filter: grayscale(1) brightness(0.58) contrast(0.9);
 }
 
 .gallery-card-overlay {
@@ -154,8 +157,9 @@
   background: linear-gradient(
     to bottom,
     transparent 40%,
-    rgba(5,5,5,0.85) 100%
+    rgba(5,5,5,0.78) 100%
   );
+  transition: background 0.28s ease;
 }
 
 .gallery-card.focused .gallery-card-overlay {
@@ -163,6 +167,22 @@
     to bottom,
     rgba(5,5,5,0.01) 58%,
     rgba(5,5,5,0.16) 100%
+  );
+}
+
+.gallery-card.dimmed .gallery-card-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(5,5,5,0.04) 34%,
+    rgba(5,5,5,0.88) 100%
+  );
+}
+
+.gallery-card.bg-dimmed .gallery-card-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(5,5,5,0.12) 28%,
+    rgba(5,5,5,0.94) 100%
   );
 }
 

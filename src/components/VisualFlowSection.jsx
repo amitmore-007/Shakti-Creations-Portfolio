@@ -25,18 +25,25 @@ const getLayout = () => {
     "(max-width: 900px), (pointer: coarse)",
   ).matches;
 
-  const xMid = Math.min(
-    window.innerWidth * (mobile ? 0.36 : 0.34),
-    mobile ? 152 : 540,
+  const sideTile = mobile
+    ? Math.min(window.innerWidth * 0.29, 146)
+    : Math.min(window.innerWidth * 0.15, 230);
+  const edgePad = mobile ? 14 : 30;
+  const maxCornerX = Math.max(
+    72,
+    window.innerWidth / 2 - sideTile / 2 - edgePad,
   );
+  const maxMidX = Math.max(52, maxCornerX - (mobile ? 24 : 68));
+
+  const xMid = Math.min(window.innerWidth * (mobile ? 0.3 : 0.27), maxMidX);
   const xCorner = Math.min(
-    window.innerWidth * (mobile ? 0.47 : 0.47),
-    mobile ? 200 : 720,
+    window.innerWidth * (mobile ? 0.4 : 0.37),
+    maxCornerX,
   );
-  const yRow = window.innerHeight * (mobile ? 0.25 : 0.24);
-  const yCenter = window.innerHeight * (mobile ? 0.13 : 0.14);
-  const yBetween = -window.innerHeight * (mobile ? 0.16 : 0.22);
-  const yCorner = -window.innerHeight * (mobile ? 0.26 : 0.32);
+  const yRow = window.innerHeight * (mobile ? 0.22 : 0.2);
+  const yCenter = window.innerHeight * (mobile ? 0.12 : 0.11);
+  const yBetween = -window.innerHeight * (mobile ? 0.11 : 0.15);
+  const yCorner = -window.innerHeight * (mobile ? 0.2 : 0.25);
 
   return [
     { x: -xMid, y: yRow, r: 0 },
@@ -70,6 +77,7 @@ export default function VisualFlowSection() {
           opacity: 0,
           scale: 0.9,
           zIndex: i === 1 ? 14 : 8 + i,
+          force3D: true,
         });
       });
 
@@ -91,6 +99,7 @@ export default function VisualFlowSection() {
           scrub: 0.9,
           pin: true,
           anticipatePin: 1,
+          fastScrollEnd: true,
           invalidateOnRefresh: true,
         },
       });
@@ -104,6 +113,7 @@ export default function VisualFlowSection() {
             rotation: 0,
             opacity: 1,
             scale: 1,
+            force3D: true,
             duration: 0.52,
           },
           at,
@@ -133,16 +143,21 @@ export default function VisualFlowSection() {
       );
     }, sectionRef);
 
-    const onRefreshInit = () => {
-      layout = getLayout();
-      applyStartState();
+    let resizeTimer;
+    const onResize = () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        layout = getLayout();
+        applyStartState();
+        ScrollTrigger.refresh();
+      }, 120);
     };
 
-    ScrollTrigger.addEventListener("refreshInit", onRefreshInit);
-    ScrollTrigger.refresh();
+    window.addEventListener("resize", onResize, { passive: true });
 
     return () => {
-      ScrollTrigger.removeEventListener("refreshInit", onRefreshInit);
+      window.removeEventListener("resize", onResize);
+      window.clearTimeout(resizeTimer);
       ctx.revert();
     };
   }, []);

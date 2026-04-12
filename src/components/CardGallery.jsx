@@ -79,6 +79,7 @@ export default function CardGallery() {
       opacity: 0,
       scale: 0.82,
       zIndex: pos.z,
+      force3D: true,
     };
   }, []);
 
@@ -135,6 +136,7 @@ export default function CardGallery() {
         opacity: 1,
         scale: 1,
         zIndex: pos.z,
+        force3D: true,
       });
     });
   }, []);
@@ -168,6 +170,7 @@ export default function CardGallery() {
           opacity: 1,
           scale: 1,
           zIndex: pos.z,
+          force3D: true,
           duration: 0.84,
           ease: "power3.out",
           overwrite: "auto",
@@ -180,6 +183,7 @@ export default function CardGallery() {
         card,
         {
           y: pos.y - 10,
+          force3D: true,
           duration: 0.18,
           yoyo: true,
           repeat: 1,
@@ -255,6 +259,7 @@ export default function CardGallery() {
           y: pos.y - 40,
           scale: 1.05,
           zIndex: 20,
+          force3D: true,
           duration: 0.36,
           ease: "power3.out",
           overwrite: "auto",
@@ -263,6 +268,7 @@ export default function CardGallery() {
         // Others dim down and desaturate (via CSS class)
         gsap.to(card, {
           scale: 0.97,
+          force3D: true,
           duration: 0.32,
           ease: "power2.out",
           overwrite: "auto",
@@ -283,6 +289,7 @@ export default function CardGallery() {
         y: pos.y,
         scale: 1,
         zIndex: pos.z,
+        force3D: true,
         duration: 0.38,
         ease: "power3.out",
         overwrite: "auto",
@@ -303,17 +310,22 @@ export default function CardGallery() {
     setHoveredId(null);
 
     const idx = CARDS.findIndex((c) => c.id === id);
+    const allCards = cardsRef.current.filter(Boolean);
+    gsap.killTweensOf(allCards);
+
     cardsRef.current.forEach((card, i) => {
       if (!card) return;
       if (CARDS[i].id === id) {
         gsap.to(card, {
           x: 0,
-          y: -20,
+          y: -16,
           rotate: 0,
-          scale: 1,
+          scale: 1.13,
           zIndex: 50,
-          duration: 0.7,
-          ease: "power4.out",
+          force3D: true,
+          duration: 0.44,
+          ease: "power3.out",
+          overwrite: "auto",
         });
       } else {
         const pos = FAN_POSITIONS[i];
@@ -321,11 +333,13 @@ export default function CardGallery() {
         gsap.to(card, {
           x: pos.x + direction * 60,
           y: pos.y + 60,
-          scale: 0.9,
-          opacity: 0.25,
+          scale: 0.92,
+          opacity: 0.5,
           zIndex: pos.z,
-          duration: 0.6,
+          force3D: true,
+          duration: 0.4,
           ease: "power3.out",
+          overwrite: "auto",
         });
       }
     });
@@ -333,6 +347,9 @@ export default function CardGallery() {
 
   const closeFocus = () => {
     setFocusedId(null);
+
+    const allCards = cardsRef.current.filter(Boolean);
+    gsap.killTweensOf(allCards);
 
     cardsRef.current.forEach((card, i) => {
       if (!card) return;
@@ -344,8 +361,10 @@ export default function CardGallery() {
         scale: 1,
         opacity: 1,
         zIndex: pos.z,
-        duration: 0.7,
-        ease: "power4.out",
+        force3D: true,
+        duration: 0.46,
+        ease: "power3.out",
+        overwrite: "auto",
       });
     });
   };
