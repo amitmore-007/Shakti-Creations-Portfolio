@@ -6,6 +6,8 @@ import "./Contact.css";
 gsap.registerPlugin(ScrollTrigger);
 
 const FORMSUBMIT_ENDPOINT = "https://formsubmit.co/ajax/amore43035@gmail.com";
+const SHEET_ENDPOINT =
+  "https://script.google.com/macros/s/AKfycbzJo843uNOUS2juBW2ncbkfjiVdphSMKFkwfiFy_kOfWUDB507sJYHdyZ_MRaP-BRs2/exec";
 const WEBSITE_NAME = "Shakti Creations";
 
 const SOCIALS = [
@@ -30,6 +32,7 @@ export default function Contact() {
     email: "",
     service: "",
     message: "",
+    mobile: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -103,11 +106,32 @@ export default function Contact() {
     setSubmitError("");
 
     try {
+      // ---------- 1. SAVE TO GOOGLE SHEET ----------
+      const sheetRes = await fetch(SHEET_ENDPOINT, {
+        method: "POST",
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          mobile: form.mobile.trim(),
+          service: form.service,
+          message: form.message.trim(),
+        }),
+      });
+
+      const sheetData = await sheetRes.json();
+
+      if (!sheetData.success) {
+        throw new Error("Failed to save to Google Sheet");
+      }
+
+      // ---------- 2. SEND EMAIL ----------
       const payload = new FormData();
+
       payload.append("name", form.name.trim());
       payload.append("email", form.email.trim());
       payload.append("service", form.service);
       payload.append("message", form.message.trim());
+      payload.append("mobile", form.mobile.trim());
       payload.append(
         "_subject",
         `${WEBSITE_NAME} • New Contact Request (${form.service})`,
@@ -116,7 +140,7 @@ export default function Contact() {
       payload.append("_captcha", "false");
       payload.append("_replyto", form.email.trim());
 
-      const res = await fetch(FORMSUBMIT_ENDPOINT, {
+      const emailRes = await fetch(FORMSUBMIT_ENDPOINT, {
         method: "POST",
         body: payload,
         headers: {
@@ -124,21 +148,24 @@ export default function Contact() {
         },
       });
 
-      if (!res.ok) {
-        throw new Error("Submission failed");
+      const emailData = await emailRes.json();
+
+      if (
+        !emailRes.ok ||
+        (emailData.success !== "true" && emailData.success !== true)
+      ) {
+        throw new Error("Email submission failed");
       }
 
-      const data = await res.json();
-      if (data?.success !== "true" && data?.success !== true) {
-        throw new Error("Submission failed");
-      }
-
+      // ---------- SUCCESS ----------
       setSent(true);
+
       setForm({
         name: "",
         email: "",
         service: "",
         message: "",
+        mobile: "",
       });
 
       gsap.fromTo(
@@ -147,9 +174,7 @@ export default function Contact() {
         { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" },
       );
     } catch (_err) {
-      setSubmitError(
-        "Could not send right now. Please try again or email amore43035@gmail.com.",
-      );
+      setSubmitError("Could not send right now. Please try again later.");
     } finally {
       setSubmitting(false);
     }
@@ -248,6 +273,19 @@ export default function Contact() {
                     required
                   />
                 </div>
+              </div>
+
+              <div className="form-group" data-form-fx>
+                <label className="form-label">Mobile Number</label>
+                <input
+                  type="tel"
+                  name="mobile"
+                  value={form.mobile}
+                  onChange={handleChange}
+                  className="form-input"
+                  placeholder="+91 98765 43210"
+                  required
+                />
               </div>
 
               <div className="form-group" data-form-fx>

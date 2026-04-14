@@ -18,9 +18,18 @@
 .marquee-track {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 0;
+  width: max-content;
   white-space: nowrap;
   will-change: transform;
+}
+
+.marquee-segment {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding-right: 32px;
+  flex-shrink: 0;
 }
 
 .marquee-item {

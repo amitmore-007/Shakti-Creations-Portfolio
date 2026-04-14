@@ -23,6 +23,23 @@ const MARQUEE_ITEMS = [
   "·",
 ];
 
+const MARQUEE_LOOP_COPIES = 10;
+
+function renderMarqueeTrackItems(prefix) {
+  return Array.from({ length: MARQUEE_LOOP_COPIES }, (_, segmentIndex) => (
+    <div className="marquee-segment" key={`${prefix}-${segmentIndex}`}>
+      {MARQUEE_ITEMS.map((item, itemIndex) => (
+        <span
+          key={`${prefix}-${segmentIndex}-${itemIndex}`}
+          className={item === "·" ? "marquee-dot" : "marquee-item"}
+        >
+          {item}
+        </span>
+      ))}
+    </div>
+  ));
+}
+
 export default function About() {
   const sectionRef = useRef(null);
   const imgRef = useRef(null);
@@ -83,19 +100,31 @@ export default function About() {
       );
 
       // Continuous marquee
-      const marqueeWidth = marqueeRef.current.scrollWidth / 2;
-      gsap.to(marqueeRef.current, {
-        x: -marqueeWidth,
-        duration: 25,
-        ease: "none",
-        repeat: -1,
-      });
-      gsap.to(marquee2Ref.current, {
-        x: marqueeWidth,
-        duration: 30,
-        ease: "none",
-        repeat: -1,
-      });
+      const topSegment = marqueeRef.current?.querySelector(".marquee-segment");
+      const bottomSegment =
+        marquee2Ref.current?.querySelector(".marquee-segment");
+
+      if (topSegment) {
+        gsap.to(marqueeRef.current, {
+          x: -topSegment.scrollWidth,
+          duration: 25,
+          ease: "none",
+          repeat: -1,
+        });
+      }
+
+      if (bottomSegment) {
+        gsap.fromTo(
+          marquee2Ref.current,
+          { x: -bottomSegment.scrollWidth },
+          {
+            x: 0,
+            duration: 30,
+            ease: "none",
+            repeat: -1,
+          },
+        );
+      }
 
       // Stats counter
       statsRef.current.forEach((stat) => {
@@ -133,14 +162,7 @@ export default function About() {
       {/* Marquee top */}
       <div className="marquee-wrap">
         <div ref={marqueeRef} className="marquee-track">
-          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
-            <span
-              key={i}
-              className={item === "·" ? "marquee-dot" : "marquee-item"}
-            >
-              {item}
-            </span>
-          ))}
+          {renderMarqueeTrackItems("top")}
         </div>
       </div>
 
@@ -251,14 +273,7 @@ export default function About() {
       {/* Second marquee */}
       <div className="marquee-wrap marquee-reverse">
         <div ref={marquee2Ref} className="marquee-track">
-          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
-            <span
-              key={i}
-              className={item === "·" ? "marquee-dot" : "marquee-item"}
-            >
-              {item}
-            </span>
-          ))}
+          {renderMarqueeTrackItems("bottom")}
         </div>
       </div>
     </section>
