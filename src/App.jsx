@@ -117,7 +117,7 @@ export default function App() {
           <Hero />
 
           {/* About — rises over hero */}
-          <ScrollReveal>
+          <ScrollReveal insetTop={0}>
             <About />
           </ScrollReveal>
 
