@@ -45,7 +45,6 @@ export default function About() {
   const imgRef = useRef(null);
   const textRef = useRef(null);
   const marqueeRef = useRef(null);
-  const marquee2Ref = useRef(null);
   const statsRef = useRef([]);
 
   useEffect(() => {
@@ -101,8 +100,6 @@ export default function About() {
 
       // Continuous marquee
       const topSegment = marqueeRef.current?.querySelector(".marquee-segment");
-      const bottomSegment =
-        marquee2Ref.current?.querySelector(".marquee-segment");
 
       if (topSegment) {
         gsap.to(marqueeRef.current, {
@@ -111,19 +108,6 @@ export default function About() {
           ease: "none",
           repeat: -1,
         });
-      }
-
-      if (bottomSegment) {
-        gsap.fromTo(
-          marquee2Ref.current,
-          { x: -bottomSegment.scrollWidth },
-          {
-            x: 0,
-            duration: 30,
-            ease: "none",
-            repeat: -1,
-          },
-        );
       }
 
       // Stats counter
@@ -267,13 +251,6 @@ export default function About() {
               </svg>
             </div>
           </a>
-        </div>
-      </div>
-
-      {/* Second marquee */}
-      <div className="marquee-wrap marquee-reverse">
-        <div ref={marquee2Ref} className="marquee-track">
-          {renderMarqueeTrackItems("bottom")}
         </div>
       </div>
     </section>

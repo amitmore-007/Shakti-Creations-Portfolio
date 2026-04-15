@@ -121,13 +121,6 @@ export default function App() {
             <About />
           </ScrollReveal>
 
-          {/* Visual Flow Story */}
-          <DeferredSection minHeight={860} rootMargin="360px 0px">
-            <Suspense fallback={<SectionFallback minHeight={860} />}>
-              <VisualFlowSection />
-            </Suspense>
-          </DeferredSection>
-
           {/* Cube Showcase */}
           <DeferredSection minHeight={860} rootMargin="360px 0px">
             <Suspense fallback={<SectionFallback minHeight={860} />}>
@@ -155,6 +148,13 @@ export default function App() {
               <ScrollReveal>
                 <Testimonials />
               </ScrollReveal>
+            </Suspense>
+          </DeferredSection>
+
+          {/* Visual Flow Story */}
+          <DeferredSection minHeight={860} rootMargin="360px 0px">
+            <Suspense fallback={<SectionFallback minHeight={860} />}>
+              <VisualFlowSection />
             </Suspense>
           </DeferredSection>
 

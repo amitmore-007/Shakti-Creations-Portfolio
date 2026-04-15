@@ -13,7 +13,6 @@
   border-bottom: 1px solid var(--border);
   margin-bottom: 80px;
 }
-.marquee-wrap.marquee-reverse { margin-top: 80px; margin-bottom: 0; }
 
 .marquee-track {
   display: flex;
@@ -211,7 +210,6 @@
 @media (max-width: 900px) {
   .about { padding: 0 0 90px; }
   .marquee-wrap { margin-bottom: 56px; }
-  .marquee-wrap.marquee-reverse { margin-top: 56px; }
 
   .about-inner {
     grid-template-columns: 1fr;

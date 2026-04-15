@@ -9,49 +9,40 @@ import cubeImage2 from "../assets/service-travel.webp";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Uses local videos and available still-image fallbacks for cube faces.
-
-const getCubeTransform = (y) =>
-  `scaleX(var(--cube-scale-x)) rotateX(-8deg) rotateY(${y}deg)`;
-
-const FACES = [
+const MEDIA_ITEMS = [
   {
     type: "image",
     src: cubeImage1,
     label: "Fashion Shoot",
-    transform: "rotateY(0deg) translateZ(var(--cube-half))",
   },
   {
     type: "video",
     src: cubeVideo1,
     label: "Brand Film",
-    transform: "rotateY(90deg) translateZ(var(--cube-half))",
   },
   {
     type: "image",
     src: cubeImage2,
     label: "Travel Edit",
-    transform: "rotateY(180deg) translateZ(var(--cube-half))",
   },
   {
     type: "video",
     src: cubeVideo2,
     label: "Cinematic Reel",
-    transform: "rotateY(270deg) translateZ(var(--cube-half))",
   },
+];
+
+const SEPARATE_TARGETS = [
+  { xPercent: -128, yPercent: -76, rotation: -11 },
+  { xPercent: 128, yPercent: -76, rotation: 11 },
+  { xPercent: -128, yPercent: 76, rotation: -8 },
+  { xPercent: 128, yPercent: 76, rotation: 9 },
 ];
 
 export default function CubeShowcase() {
   const sectionRef = useRef(null);
-  const cubeRef = useRef(null);
-  const sceneRef = useRef(null);
-  const rotationRef = useRef({ y: 0 });
-  const tlRef = useRef(null);
-  const [isDragging, setIsDragging] = useState(false);
   const [mediaReady, setMediaReady] = useState(false);
-  const dragStartRef = useRef(0);
-  const dragRotationRef = useRef(0);
-  const headingRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const node = sectionRef.current;
@@ -59,21 +50,24 @@ export default function CubeShowcase() {
 
     if (!("IntersectionObserver" in window)) {
       setMediaReady(true);
+      setIsVisible(true);
       return undefined;
     }
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          setMediaReady(true);
-          observer.disconnect();
+          if (entry.isIntersecting) {
+            setMediaReady(true);
+          }
+
+          setIsVisible(entry.isIntersecting);
         });
       },
       {
         root: null,
-        threshold: 0.01,
-        rootMargin: "320px 0px",
+        threshold: [0, 0.15, 0.35],
+        rootMargin: "180px 0px",
       },
     );
 
@@ -83,237 +77,147 @@ export default function CubeShowcase() {
   }, []);
 
   useEffect(() => {
-    let visibilityTrigger;
+    const mediaEls = Array.from(
+      sectionRef.current?.querySelectorAll("video.stack-card-media") || [],
+    );
+
+    if (!mediaEls.length) {
+      return undefined;
+    }
+
+    if (isVisible) {
+      mediaEls.forEach((videoEl) => {
+        const playPromise = videoEl.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(() => {});
+        }
+      });
+    } else {
+      mediaEls.forEach((videoEl) => videoEl.pause());
+    }
+
+    return undefined;
+  }, [isVisible, mediaReady]);
+
+  useEffect(() => {
+    if (!sectionRef.current) {
+      return undefined;
+    }
 
     const ctx = gsap.context(() => {
-      const mediaEls = Array.from(
-        sectionRef.current?.querySelectorAll("video.cube-media") || [],
-      );
+      const cardMotions = gsap.utils.toArray(".stack-card-motion");
+      const revealCopy =
+        sectionRef.current?.querySelector(".stack-reveal-copy");
 
-      const playMedia = () => {
-        mediaEls.forEach((videoEl) => {
-          const playPromise = videoEl.play();
-          if (playPromise && typeof playPromise.catch === "function") {
-            playPromise.catch(() => {});
-          }
-        });
-      };
+      if (!cardMotions.length || !revealCopy) {
+        return;
+      }
 
-      const pauseMedia = () => {
-        mediaEls.forEach((videoEl) => videoEl.pause());
-      };
+      gsap.set(cardMotions, {
+        xPercent: 0,
+        yPercent: 0,
+        rotation: 0,
+        scale: 0.98,
+        transformOrigin: "50% 50%",
+      });
 
-      const setCubeActive = (active) => {
-        if (active) {
-          tlRef.current?.resume();
-          playMedia();
-        } else {
-          tlRef.current?.pause();
-          pauseMedia();
-        }
-      };
+      gsap.set(revealCopy, { y: 72, opacity: 0 });
 
-      // Auto-rotate
-      tlRef.current = gsap.to(rotationRef.current, {
-        y: -360,
-        duration: 20,
-        ease: "none",
-        repeat: -1,
-        onUpdate: () => {
-          if (!isDragging && cubeRef.current) {
-            cubeRef.current.style.transform = getCubeTransform(
-              rotationRef.current.y,
-            );
-          }
+      const separateTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 60%",
+          end: "bottom 36%",
+          scrub: 1.12,
+          invalidateOnRefresh: true,
         },
       });
 
-      visibilityTrigger = ScrollTrigger.create({
-        trigger: sectionRef.current,
-        start: "top 92%",
-        end: "bottom 40%",
-        onEnter: () => setCubeActive(true),
-        onEnterBack: () => setCubeActive(true),
-        onLeave: () => setCubeActive(false),
-        onLeaveBack: () => setCubeActive(false),
+      cardMotions.forEach((cardMotion, index) => {
+        const target = SEPARATE_TARGETS[index] || SEPARATE_TARGETS[0];
+
+        separateTl.to(
+          cardMotion,
+          {
+            xPercent: target.xPercent,
+            yPercent: target.yPercent,
+            rotation: target.rotation,
+            scale: 1,
+            duration: 1,
+            ease: "power3.out",
+          },
+          0.08,
+        );
       });
 
-      setCubeActive(ScrollTrigger.isInViewport(sectionRef.current, 0.25));
-
-      // Section reveal
-      gsap.fromTo(
-        headingRef.current?.querySelectorAll("[data-text-fx]") || [],
-        { y: 36, opacity: 0, filter: "blur(8px)" },
+      separateTl.to(
+        revealCopy,
         {
           y: 0,
           opacity: 1,
-          filter: "blur(0px)",
-          duration: 0.8,
-          stagger: 0.1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 75%",
-          },
+          duration: 0.48,
+          ease: "power2.out",
         },
-      );
-
-      gsap.fromTo(
-        sceneRef.current,
-        { scale: 0.8, opacity: 0 },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 1.2,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 70%",
-          },
-        },
+        0.38,
       );
     }, sectionRef);
 
-    return () => {
-      visibilityTrigger?.kill();
-      ctx.revert();
-    };
+    return () => ctx.revert();
   }, []);
 
-  // Drag to rotate
-  const handleMouseDown = (e) => {
-    setIsDragging(true);
-    dragStartRef.current = e.clientX;
-    dragRotationRef.current = rotationRef.current.y;
-    tlRef.current?.pause();
-  };
-
-  const handleMouseMove = (e) => {
-    if (!isDragging) return;
-    const delta = (e.clientX - dragStartRef.current) * 0.5;
-    const newY = dragRotationRef.current - delta;
-    rotationRef.current.y = newY;
-    if (cubeRef.current) {
-      cubeRef.current.style.transform = getCubeTransform(newY);
-    }
-  };
-
-  const handleMouseUp = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
-    // Resume auto-rotate from current position
-    gsap.killTweensOf(rotationRef.current);
-    tlRef.current = gsap.to(rotationRef.current, {
-      y: rotationRef.current.y - 360,
-      duration: 20,
-      ease: "none",
-      repeat: -1,
-      onUpdate: () => {
-        if (cubeRef.current) {
-          cubeRef.current.style.transform = getCubeTransform(
-            rotationRef.current.y,
-          );
-        }
-      },
-    });
-  };
-
-  const handleTouchStart = (e) => {
-    setIsDragging(true);
-    dragStartRef.current = e.touches[0].clientX;
-    dragRotationRef.current = rotationRef.current.y;
-    tlRef.current?.pause();
-  };
-  const handleTouchMove = (e) => {
-    if (!isDragging) return;
-    const delta = (e.touches[0].clientX - dragStartRef.current) * 0.5;
-    const newY = dragRotationRef.current - delta;
-    rotationRef.current.y = newY;
-    if (cubeRef.current) {
-      cubeRef.current.style.transform = getCubeTransform(newY);
-    }
-  };
-
   return (
-    <section ref={sectionRef} className="cube-section">
-      <div className="cube-section-header" ref={headingRef}>
-        <span className="section-label" data-text-fx>
-          Showcase
-        </span>
-        <h2 className="cube-heading" data-text-fx>
-          Work in <em>motion</em>
-        </h2>
-        <p className="cube-sub" data-text-fx>
-          Drag to explore · Auto-rotating showcase
-        </p>
-      </div>
-
+    <section
+      ref={sectionRef}
+      className={`cube-section${isVisible ? " is-visible" : ""}`}
+    >
       <div
-        className="cube-scene-wrap"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleMouseUp}
-        style={{ cursor: isDragging ? "grabbing" : "grab" }}
+        className="stack-stage"
+        aria-label="Scroll animated stacked media showcase"
       >
-        <div className="cube-scene" ref={sceneRef}>
-          <div
-            className="cube"
-            ref={cubeRef}
-            style={{ transform: getCubeTransform(0) }}
+        <div className="stack-stage-glow" />
+
+        {MEDIA_ITEMS.map((item, index) => (
+          <article
+            key={item.label}
+            className="stack-card"
+            style={{ zIndex: MEDIA_ITEMS.length - index + 3 }}
           >
-            {FACES.map((face, i) => (
+            <div className="stack-card-motion">
               <div
-                key={i}
-                className="cube-face"
-                style={{ transform: face.transform }}
+                className="stack-card-shell"
+                style={{ "--card-delay": `${index * 140}ms` }}
               >
-                {face.type === "image" ? (
+                {item.type === "image" ? (
                   <img
-                    src={face.src}
-                    alt={face.label}
-                    className="cube-media"
+                    src={item.src}
+                    alt={item.label}
+                    className="stack-card-media"
                     loading="lazy"
                     decoding="async"
                   />
                 ) : (
                   <video
-                    className="cube-media"
-                    autoPlay={mediaReady}
+                    className="stack-card-media"
+                    autoPlay={mediaReady && isVisible}
                     muted
                     loop
                     playsInline
-                    preload="none"
+                    preload="metadata"
                   >
-                    {mediaReady && <source src={face.src} type="video/mp4" />}
+                    {mediaReady && <source src={item.src} type="video/mp4" />}
                   </video>
                 )}
-                <div className="cube-face-overlay" />
-                <span className="cube-face-label">{face.label}</span>
+                <div className="stack-card-overlay" />
+                <span className="stack-card-label">{item.label}</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Reflective floor */}
-        <div className="cube-floor" />
-
-        {/* Ambient glow */}
-        <div className="cube-glow" />
-      </div>
-
-      <div className="cube-indicators">
-        {FACES.map((face, i) => (
-          <div key={i} className="cube-indicator">
-            <span className="cube-indicator-type">
-              {face.type === "video" ? "▶" : "◼"}
-            </span>
-            <span className="cube-indicator-label">{face.label}</span>
-          </div>
+            </div>
+          </article>
         ))}
+
+        <div className="stack-reveal-copy">
+          <p>Capturing memories</p>
+          <p>that evoke your story.</p>
+        </div>
       </div>
     </section>
   );
