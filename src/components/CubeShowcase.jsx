@@ -2,32 +2,28 @@ import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./CubeShowcase.css";
-import cubeVideo1 from "../assets/cube-video-1.mp4";
-import cubeVideo2 from "../assets/cube-video-2.mp4";
 import cubeImage1 from "../assets/gallery-1.webp";
-import cubeImage2 from "../assets/service-travel.webp";
+import cubeImage2 from "../assets/gallery-2.webp";
+import cubeImage3 from "../assets/service-travel.webp";
+import cubeImage4 from "../assets/gallery-3.webp";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const MEDIA_ITEMS = [
   {
-    type: "image",
     src: cubeImage1,
     label: "Fashion Shoot",
   },
   {
-    type: "video",
-    src: cubeVideo1,
+    src: cubeImage2,
     label: "Brand Film",
   },
   {
-    type: "image",
-    src: cubeImage2,
+    src: cubeImage3,
     label: "Travel Edit",
   },
   {
-    type: "video",
-    src: cubeVideo2,
+    src: cubeImage4,
     label: "Cinematic Reel",
   },
 ];
@@ -41,7 +37,6 @@ const SEPARATE_TARGETS = [
 
 export default function CubeShowcase() {
   const sectionRef = useRef(null);
-  const [mediaReady, setMediaReady] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -49,7 +44,6 @@ export default function CubeShowcase() {
     if (!node) return undefined;
 
     if (!("IntersectionObserver" in window)) {
-      setMediaReady(true);
       setIsVisible(true);
       return undefined;
     }
@@ -57,10 +51,6 @@ export default function CubeShowcase() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setMediaReady(true);
-          }
-
           setIsVisible(entry.isIntersecting);
         });
       },
@@ -75,29 +65,6 @@ export default function CubeShowcase() {
 
     return () => observer.disconnect();
   }, []);
-
-  useEffect(() => {
-    const mediaEls = Array.from(
-      sectionRef.current?.querySelectorAll("video.stack-card-media") || [],
-    );
-
-    if (!mediaEls.length) {
-      return undefined;
-    }
-
-    if (isVisible) {
-      mediaEls.forEach((videoEl) => {
-        const playPromise = videoEl.play();
-        if (playPromise && typeof playPromise.catch === "function") {
-          playPromise.catch(() => {});
-        }
-      });
-    } else {
-      mediaEls.forEach((videoEl) => videoEl.pause());
-    }
-
-    return undefined;
-  }, [isVisible, mediaReady]);
 
   useEffect(() => {
     if (!sectionRef.current) {
@@ -187,26 +154,13 @@ export default function CubeShowcase() {
                 className="stack-card-shell"
                 style={{ "--card-delay": `${index * 140}ms` }}
               >
-                {item.type === "image" ? (
-                  <img
-                    src={item.src}
-                    alt={item.label}
-                    className="stack-card-media"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <video
-                    className="stack-card-media"
-                    autoPlay={mediaReady && isVisible}
-                    muted
-                    loop
-                    playsInline
-                    preload="metadata"
-                  >
-                    {mediaReady && <source src={item.src} type="video/mp4" />}
-                  </video>
-                )}
+                <img
+                  src={item.src}
+                  alt={item.label}
+                  className="stack-card-media"
+                  loading="lazy"
+                  decoding="async"
+                />
                 <div className="stack-card-overlay" />
                 <span className="stack-card-label">{item.label}</span>
               </div>

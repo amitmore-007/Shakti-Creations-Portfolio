@@ -84,18 +84,6 @@
     transparent 74%
   );
   z-index: -1;
-  animation: deck-wave 6.2s ease-in-out infinite;
-}
-
-@keyframes deck-wave {
-  0%,
-  100% {
-    opacity: 0.32;
-  }
-
-  50% {
-    opacity: 0.62;
-  }
 }
 
 /* CARD */
@@ -105,7 +93,6 @@
   border-radius: 12px;
   overflow: hidden;
   transform-origin: bottom center;
-  will-change: transform, opacity;
   transform: translateZ(0);
   backface-visibility: hidden;
   transition:
@@ -153,7 +140,6 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
   transition: transform 0.45s var(--ease-smooth), filter 0.24s ease;
@@ -282,6 +268,54 @@
 
 .focus-enquire:hover {
   letter-spacing: 0.22em;
+}
+
+/* VIEW ALL BUTTON */
+.gallery-view-all {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 15px 36px;
+  border-radius: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  z-index: 10;
+  overflow: hidden;
+  transition: border-color 0.32s, background 0.32s, letter-spacing 0.32s;
+}
+
+.gallery-view-all::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.06);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.36s var(--ease-smooth);
+}
+
+.gallery-view-all:hover::before {
+  transform: scaleX(1);
+}
+
+.gallery-view-all:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.3em;
+}
+
+.gallery-view-all-arrow {
+  transition: transform 0.3s var(--ease-smooth);
+}
+
+.gallery-view-all:hover .gallery-view-all-arrow {
+  transform: translateX(5px);
 }
 
 /* HINT */

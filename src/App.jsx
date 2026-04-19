@@ -16,6 +16,7 @@ import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import About from "./components/About";
 import Services from "./components/Services";
+import CardGallery from "./components/CardGallery";
 import Footer from "./components/Footer";
 import ScrollReveal from "./components/ScrollReveal";
 import DeferredSection from "./components/DeferredSection";
@@ -24,9 +25,11 @@ gsap.registerPlugin(ScrollTrigger);
 
 const VisualFlowSection = lazy(() => import("./components/VisualFlowSection"));
 const CubeShowcase = lazy(() => import("./components/CubeShowcase"));
-const CardGallery = lazy(() => import("./components/CardGallery"));
+const VideoShowcase = lazy(() => import("./components/VideoShowcase"));
 const Testimonials = lazy(() => import("./components/Testimonials"));
 const Contact = lazy(() => import("./components/Contact"));
+const GalleryPage = lazy(() => import("./components/GalleryPage"));
+const VideoLibraryPage = lazy(() => import("./components/VideoLibraryPage"));
 
 function SectionFallback({ minHeight }) {
   return (
@@ -40,6 +43,8 @@ function SectionFallback({ minHeight }) {
 
 export default function App() {
   const [loaded, setLoaded] = useState(false);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [isVideoLibraryOpen, setIsVideoLibraryOpen] = useState(false);
   const lenisRef = useRef(null);
 
   const handleLoaderComplete = useCallback(() => {
@@ -136,9 +141,16 @@ export default function App() {
           </ScrollReveal>
 
           {/* Card Gallery / Featured Work */}
-          <DeferredSection id="work" minHeight={900} rootMargin="320px 0px">
-            <Suspense fallback={<SectionFallback minHeight={900} />}>
-              <CardGallery />
+          <div id="work">
+            <CardGallery onViewAll={() => setIsGalleryOpen(true)} />
+          </div>
+
+          {/* Video Showcase */}
+          <DeferredSection minHeight={720} rootMargin="320px 0px">
+            <Suspense fallback={<SectionFallback minHeight={720} />}>
+              <ScrollReveal>
+                <VideoShowcase onViewAll={() => setIsVideoLibraryOpen(true)} />
+              </ScrollReveal>
             </Suspense>
           </DeferredSection>
 
@@ -170,6 +182,26 @@ export default function App() {
           {/* Footer */}
           <Footer />
         </main>
+      )}
+
+      {/* Full-screen Photography Gallery */}
+      {isGalleryOpen && (
+        <Suspense fallback={null}>
+          <GalleryPage
+            isOpen={isGalleryOpen}
+            onClose={() => setIsGalleryOpen(false)}
+          />
+        </Suspense>
+      )}
+
+      {/* Full-screen Video Library */}
+      {isVideoLibraryOpen && (
+        <Suspense fallback={null}>
+          <VideoLibraryPage
+            isOpen={isVideoLibraryOpen}
+            onClose={() => setIsVideoLibraryOpen(false)}
+          />
+        </Suspense>
       )}
     </>
   );

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./CardGallery.css";
 import gallery1 from "../assets/gallery-1.webp";
 import gallery2 from "../assets/gallery-2.webp";
@@ -10,8 +9,6 @@ import gallery5 from "../assets/gallery-5.webp";
 import gallery6 from "../assets/gallery-6.webp";
 import gallery7 from "../assets/service-model.webp";
 import gallery8 from "../assets/service-travel.webp";
-
-gsap.registerPlugin(ScrollTrigger);
 
 // Uses available local assets with fallbacks for missing slots.
 
@@ -38,18 +35,7 @@ const FAN_POSITIONS = [
   { x: 445, y: 56, rotate: 26, z: 8 },
 ];
 
-const ENTRY_DIRECTIONS = [
-  { fromX: -1, fromY: -1 },
-  { fromX: 1, fromY: -1 },
-  { fromX: -1, fromY: 1 },
-  { fromX: 1, fromY: 1 },
-  { fromX: 0, fromY: -1 },
-  { fromX: 0, fromY: 1 },
-  { fromX: -1, fromY: 0 },
-  { fromX: 1, fromY: 0 },
-];
-
-export default function CardGallery() {
+export default function CardGallery({ onViewAll }) {
   const sectionRef = useRef(null);
   const deckRef = useRef(null);
   const headerRef = useRef(null);
@@ -62,27 +48,6 @@ export default function CardGallery() {
       "(max-width: 900px), (hover: none), (pointer: coarse)",
     ).matches;
   });
-  const hasAnimatedIn = useRef(false);
-  const introTlRef = useRef(null);
-  const mobileTlRef = useRef(null);
-
-  const getEntryState = useCallback((i) => {
-    const pos = FAN_POSITIONS[i];
-    const dir =
-      ENTRY_DIRECTIONS[i] || ENTRY_DIRECTIONS[i % ENTRY_DIRECTIONS.length];
-    const spreadX = Math.max(window.innerWidth * 0.52, 760);
-    const spreadY = Math.max(window.innerHeight * 0.42, 360);
-
-    return {
-      x: dir.fromX * spreadX,
-      y: dir.fromY * spreadY,
-      rotate: pos.rotate + dir.fromX * 20 + dir.fromY * 12,
-      opacity: 0,
-      scale: 0.82,
-      zIndex: pos.z,
-      force3D: true,
-    };
-  }, []);
 
   useEffect(() => {
     const media = window.matchMedia(
@@ -108,6 +73,23 @@ export default function CardGallery() {
     };
   }, []);
 
+  const setDesktopCardState = useCallback(() => {
+    cardsRef.current.forEach((card, i) => {
+      if (!card) return;
+      const pos = FAN_POSITIONS[i];
+      gsap.killTweensOf(card);
+      gsap.set(card, {
+        x: pos.x,
+        y: pos.y,
+        rotate: pos.rotate,
+        scale: 1,
+        opacity: 1,
+        zIndex: pos.z,
+        force3D: true,
+      });
+    });
+  }, []);
+
   const setMobileCardState = useCallback(() => {
     cardsRef.current.forEach((card) => {
       if (!card) return;
@@ -123,187 +105,92 @@ export default function CardGallery() {
     });
   }, []);
 
-  const prepareMobileCards = useCallback(() => {
-    cardsRef.current.forEach((card, i) => {
-      if (!card) return;
-      gsap.killTweensOf(card);
-      gsap.set(card, {
-        x: i % 2 === 0 ? -72 : 72,
-        y: 0,
-        rotate: 0,
-        scale: 1,
-        opacity: 0,
-        force3D: true,
-      });
-    });
-  }, []);
-
-  const animateMobileCardsIn = useCallback(() => {
-    const cards = cardsRef.current.filter(Boolean);
-    if (!cards.length) return;
-
-    mobileTlRef.current?.kill();
-    mobileTlRef.current = gsap.to(cards, {
-      x: 0,
-      opacity: 1,
-      duration: 0.56,
-      stagger: 0.09,
-      ease: "power3.out",
-      overwrite: "auto",
-      force3D: true,
-    });
-  }, []);
-
-  const stopIntroTimeline = useCallback(() => {
-    if (!introTlRef.current) return;
-    introTlRef.current.kill();
-    introTlRef.current = null;
-
-    cardsRef.current.forEach((card, i) => {
-      if (!card) return;
-      const pos = FAN_POSITIONS[i];
-      gsap.set(card, {
-        x: pos.x,
-        y: pos.y,
-        rotate: pos.rotate,
-        opacity: 1,
-        scale: 1,
-        zIndex: pos.z,
-        force3D: true,
-      });
-    });
-  }, []);
-
-  const animateIn = useCallback(() => {
-    if (hasAnimatedIn.current) return;
-    if (isMobileLayout) {
-      animateMobileCardsIn();
-      return;
-    }
-
-    hasAnimatedIn.current = true;
-
-    const cards = cardsRef.current.filter(Boolean);
-    if (!cards.length) return;
-
-    const tl = gsap.timeline();
-    introTlRef.current = tl;
-
-    cards.forEach((card, i) => {
-      const pos = FAN_POSITIONS[i];
-
-      gsap.set(card, getEntryState(i));
-
-      tl.to(
-        card,
-        {
-          x: pos.x,
-          y: pos.y,
-          rotate: pos.rotate,
-          opacity: 1,
-          scale: 1,
-          zIndex: pos.z,
-          force3D: true,
-          duration: 0.84,
-          ease: "power3.out",
-          overwrite: "auto",
-        },
-        i * 0.07,
-      );
-
-      // Subtle wave pulse after reveal for a smoother, richer transition.
-      tl.to(
-        card,
-        {
-          y: pos.y - 10,
-          force3D: true,
-          duration: 0.18,
-          yoyo: true,
-          repeat: 1,
-          ease: "sine.inOut",
-          overwrite: "auto",
-        },
-        0.45 + i * 0.05,
-      );
-    });
-  }, [animateMobileCardsIn, getEntryState, isMobileLayout]);
-
   useEffect(() => {
+    const headerTargets =
+      headerRef.current?.querySelectorAll("[data-text-fx]") || [];
+    const cards = cardsRef.current.filter(Boolean);
+
+    if (!cards.length) return undefined;
+
     if (isMobileLayout) {
-      hasAnimatedIn.current = false;
       setHoveredId(null);
       setFocusedId(null);
-      introTlRef.current?.kill();
-      mobileTlRef.current?.kill();
-      prepareMobileCards();
 
-      const mobileTrigger = ScrollTrigger.create({
-        trigger: sectionRef.current,
-        start: "top 90%",
-        once: true,
-        onEnter: animateMobileCardsIn,
-      });
+      setMobileCardState();
 
-      if (ScrollTrigger.isInViewport(sectionRef.current, 0.2)) {
-        animateMobileCardsIn();
-      }
+      const tl = gsap.timeline();
+      tl.fromTo(
+        headerTargets,
+        { y: 18, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.08,
+          duration: 0.42,
+          ease: "power2.out",
+        },
+      );
+
+      tl.fromTo(
+        cards,
+        {
+          x: (i) => (i % 2 === 0 ? -30 : 30),
+          opacity: 0,
+        },
+        {
+          x: 0,
+          opacity: 1,
+          stagger: 0.07,
+          duration: 0.45,
+          ease: "power2.out",
+          overwrite: "auto",
+        },
+        "-=0.2",
+      );
 
       return () => {
-        mobileTrigger.kill();
-        mobileTlRef.current?.kill();
+        tl.kill();
       };
     }
 
-    mobileTlRef.current?.kill();
-    setMobileCardState();
+    setDesktopCardState();
 
-    cardsRef.current.forEach((card, i) => {
-      if (!card) return;
-      gsap.set(card, getEntryState(i));
-    });
-
-    const revealTrigger = ScrollTrigger.create({
-      trigger: sectionRef.current,
-      start: "top 88%",
-      once: true,
-      onEnter: animateIn,
-    });
-
-    const headerAnim = gsap.fromTo(
-      headerRef.current?.querySelectorAll("[data-text-fx]") || [],
-      { y: 32, opacity: 0, filter: "blur(8px)" },
+    const tl = gsap.timeline();
+    tl.fromTo(
+      headerTargets,
+      { y: 18, opacity: 0, filter: "blur(4px)" },
       {
         y: 0,
         opacity: 1,
         filter: "blur(0px)",
-        duration: 0.82,
-        stagger: 0.1,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 78%",
-        },
+        duration: 0.52,
+        stagger: 0.08,
+        ease: "power2.out",
       },
     );
 
+    tl.from(
+      cards,
+      {
+        y: "+=18",
+        opacity: 0,
+        scale: 0.98,
+        stagger: 0.05,
+        duration: 0.52,
+        ease: "power2.out",
+        overwrite: "auto",
+        force3D: true,
+      },
+      "-=0.22",
+    );
+
     return () => {
-      revealTrigger.kill();
-      introTlRef.current?.kill();
-      headerAnim.scrollTrigger?.kill();
-      headerAnim.kill();
+      tl.kill();
     };
-  }, [
-    animateIn,
-    animateMobileCardsIn,
-    getEntryState,
-    isMobileLayout,
-    prepareMobileCards,
-    setMobileCardState,
-  ]);
+  }, [isMobileLayout, setDesktopCardState, setMobileCardState]);
 
   const handleHover = (id) => {
     if (isMobileLayout || focusedId) return;
-    stopIntroTimeline();
     setHoveredId(id);
 
     cardsRef.current.forEach((card, i) => {
@@ -358,7 +245,6 @@ export default function CardGallery() {
 
   const handleClick = (id) => {
     if (isMobileLayout) return;
-    stopIntroTimeline();
 
     if (focusedId === id) {
       closeFocus();
@@ -439,14 +325,14 @@ export default function CardGallery() {
       {/* Header */}
       <div className="gallery-header" ref={headerRef}>
         <span className="section-label" data-text-fx>
-          Portfolio
+          Photography
         </span>
         <h2 className="gallery-heading" data-text-fx>
-          Featured <em>Work</em>
+          Featured <em>Shots</em>
         </h2>
         <p className="gallery-sub" data-text-fx>
           {isMobileLayout
-            ? "Cards enter alternately from left and right"
+            ? "Portrait · Travel · Fashion · Commercial"
             : "Hover to preview · Click to focus · Click again to dismiss"}
         </p>
       </div>
@@ -527,11 +413,16 @@ export default function CardGallery() {
 
       <p className="gallery-hint">
         {isMobileLayout
-          ? "Scroll down to see all 8 featured projects"
+          ? "Scroll down to see all 8 featured photographs"
           : focusedId
             ? "Click anywhere to close · or click another card"
-            : "8 works in the deck"}
+            : "8 featured photographs in the deck"}
       </p>
+
+      <button className="gallery-view-all" onClick={onViewAll}>
+        <span>View All Photography</span>
+        <span className="gallery-view-all-arrow">→</span>
+      </button>
     </section>
   );
 }
