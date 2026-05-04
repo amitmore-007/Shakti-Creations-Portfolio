@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import gsap from "gsap";
 import "./GalleryPage.css";
 
@@ -98,7 +105,7 @@ const ALL_PHOTOS = [
   { id: 60, src: gallery2, title: "Award Night", cat: "Events" },
 ];
 
-export default function GalleryPage({ isOpen, onClose }) {
+const GalleryPage = forwardRef(function GalleryPage({ isOpen, onClose }, ref) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [lightboxImg, setLightboxImg] = useState(null);
   const pageRef = useRef(null);
@@ -199,6 +206,14 @@ export default function GalleryPage({ isOpen, onClose }) {
       onComplete: onClose,
     });
   }, [onClose]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      close: handleClose,
+    }),
+    [handleClose],
+  );
 
   const handleCategoryChange = useCallback(
     (cat) => {
@@ -357,4 +372,6 @@ export default function GalleryPage({ isOpen, onClose }) {
       )}
     </>
   );
-}
+});
+
+export default GalleryPage;

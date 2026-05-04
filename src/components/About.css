@@ -2,6 +2,12 @@
   background: var(--bg);
   padding: 0 0 108px;
   overflow: hidden;
+  position: relative;
+}
+
+.about > :not(.grid-background) {
+  position: relative;
+  z-index: 1;
 }
 
 /* MARQUEE */

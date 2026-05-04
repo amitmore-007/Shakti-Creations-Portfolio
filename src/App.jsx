@@ -31,6 +31,13 @@ const Contact = lazy(() => import("./components/Contact"));
 const GalleryPage = lazy(() => import("./components/GalleryPage"));
 const VideoLibraryPage = lazy(() => import("./components/VideoLibraryPage"));
 
+const getOverlayFromUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+  const overlay = params.get("overlay");
+  if (overlay === "gallery" || overlay === "videos") return overlay;
+  return null;
+};
+
 function SectionFallback({ minHeight }) {
   return (
     <div
@@ -43,13 +50,106 @@ function SectionFallback({ minHeight }) {
 
 export default function App() {
   const [loaded, setLoaded] = useState(false);
-  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
-  const [isVideoLibraryOpen, setIsVideoLibraryOpen] = useState(false);
+  const [activeOverlay, setActiveOverlay] = useState(() => getOverlayFromUrl());
   const lenisRef = useRef(null);
+  const galleryRef = useRef(null);
+  const videoLibraryRef = useRef(null);
+  const overlayClosingRef = useRef(false);
+  const pendingScrollRef = useRef(null);
 
   const handleLoaderComplete = useCallback(() => {
     setLoaded(true);
   }, []);
+
+  const scrollToHash = useCallback((hash) => {
+    if (!hash || hash === "#") return;
+    const target = document.querySelector(hash);
+    if (!target) return;
+
+    const lenis = lenisRef.current;
+    if (lenis) {
+      lenis.scrollTo(target, {
+        offset: -80,
+        duration: 1.6,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      });
+      return;
+    }
+
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  const finalizeOverlayClose = useCallback(() => {
+    overlayClosingRef.current = false;
+    setActiveOverlay(null);
+
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("overlay")) {
+      url.searchParams.delete("overlay");
+      window.history.replaceState({ overlay: null }, "", url);
+    }
+  }, []);
+
+  const closeActiveOverlay = useCallback(() => {
+    if (!activeOverlay || overlayClosingRef.current) return;
+
+    const ref =
+      activeOverlay === "gallery"
+        ? galleryRef.current
+        : videoLibraryRef.current;
+
+    if (ref?.close) {
+      overlayClosingRef.current = true;
+      ref.close();
+      return;
+    }
+
+    finalizeOverlayClose();
+  }, [activeOverlay, finalizeOverlayClose]);
+
+  const openOverlay = useCallback(
+    (overlay) => {
+      if (!overlay || activeOverlay === overlay) return;
+
+      setActiveOverlay(overlay);
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("overlay", overlay);
+      window.history.pushState({ overlay }, "", url);
+    },
+    [activeOverlay],
+  );
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const overlay = getOverlayFromUrl();
+
+      if (!overlay && activeOverlay) {
+        closeActiveOverlay();
+        return;
+      }
+
+      if (overlay && overlay !== activeOverlay) {
+        setActiveOverlay(overlay);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [activeOverlay, closeActiveOverlay]);
+
+  useEffect(() => {
+    if (activeOverlay !== null) return;
+
+    const pendingTarget = pendingScrollRef.current;
+    if (!pendingTarget) return;
+
+    pendingScrollRef.current = null;
+    window.requestAnimationFrame(() => {
+      scrollToHash(pendingTarget);
+    });
+  }, [activeOverlay, scrollToHash]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -69,6 +169,15 @@ export default function App() {
     // Connect Lenis to ScrollTrigger
     lenis.on("scroll", ScrollTrigger.update);
 
+    return () => {
+      lenis.destroy();
+      gsap.ticker.remove((time) => lenis.raf(time * 1000));
+    };
+  }, [loaded]);
+
+  useEffect(() => {
+    if (!loaded) return;
+
     // Smooth anchor links
     const anchors = document.querySelectorAll('a[href^="#"]');
     const listeners = [];
@@ -82,11 +191,14 @@ export default function App() {
         if (!target) return;
 
         e.preventDefault();
-        lenis.scrollTo(target, {
-          offset: -80,
-          duration: 1.6,
-          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        });
+
+        if (activeOverlay) {
+          pendingScrollRef.current = href;
+          closeActiveOverlay();
+          return;
+        }
+
+        scrollToHash(href);
       };
 
       anchor.addEventListener("click", onClick);
@@ -97,10 +209,8 @@ export default function App() {
       listeners.forEach(({ anchor, onClick }) => {
         anchor.removeEventListener("click", onClick);
       });
-      lenis.destroy();
-      gsap.ticker.remove((time) => lenis.raf(time * 1000));
     };
-  }, [loaded]);
+  }, [activeOverlay, closeActiveOverlay, loaded, scrollToHash]);
 
   return (
     <>
@@ -142,14 +252,14 @@ export default function App() {
 
           {/* Card Gallery / Featured Work */}
           <div id="work">
-            <CardGallery onViewAll={() => setIsGalleryOpen(true)} />
+            <CardGallery onViewAll={() => openOverlay("gallery")} />
           </div>
 
           {/* Video Showcase */}
           <DeferredSection minHeight={720} rootMargin="320px 0px">
             <Suspense fallback={<SectionFallback minHeight={720} />}>
               <ScrollReveal>
-                <VideoShowcase onViewAll={() => setIsVideoLibraryOpen(true)} />
+                <VideoShowcase onViewAll={() => openOverlay("videos")} />
               </ScrollReveal>
             </Suspense>
           </DeferredSection>
@@ -185,21 +295,23 @@ export default function App() {
       )}
 
       {/* Full-screen Photography Gallery */}
-      {isGalleryOpen && (
+      {activeOverlay === "gallery" && (
         <Suspense fallback={null}>
           <GalleryPage
-            isOpen={isGalleryOpen}
-            onClose={() => setIsGalleryOpen(false)}
+            ref={galleryRef}
+            isOpen={activeOverlay === "gallery"}
+            onClose={finalizeOverlayClose}
           />
         </Suspense>
       )}
 
       {/* Full-screen Video Library */}
-      {isVideoLibraryOpen && (
+      {activeOverlay === "videos" && (
         <Suspense fallback={null}>
           <VideoLibraryPage
-            isOpen={isVideoLibraryOpen}
-            onClose={() => setIsVideoLibraryOpen(false)}
+            ref={videoLibraryRef}
+            isOpen={activeOverlay === "videos"}
+            onClose={finalizeOverlayClose}
           />
         </Suspense>
       )}

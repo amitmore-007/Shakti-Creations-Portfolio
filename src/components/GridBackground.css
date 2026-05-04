@@ -1,0 +1,122 @@
+.grid-host {
+  position: relative;
+  isolation: isolate;
+}
+
+.grid-background {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  --grid-rotate: -9deg;
+  --grid-drift-x: 54px;
+  --grid-drift-y: 54px;
+  --grid-cursor-x: 50%;
+  --grid-cursor-y: 50%;
+  --grid-glow-opacity: 0;
+  --grid-glow-size: 180px;
+}
+
+.grid-background--front {
+  z-index: 1;
+}
+
+.grid-direction-left {
+  --grid-rotate: -9deg;
+  --grid-drift-x: 54px;
+  --grid-drift-y: 54px;
+}
+
+.grid-direction-right {
+  --grid-rotate: 9deg;
+  --grid-drift-x: -54px;
+  --grid-drift-y: 54px;
+}
+
+.grid-direction-up-left {
+  --grid-rotate: -9deg;
+  --grid-drift-x: 54px;
+  --grid-drift-y: -54px;
+}
+
+.grid-direction-up-right {
+  --grid-rotate: 9deg;
+  --grid-drift-x: -54px;
+  --grid-drift-y: -54px;
+}
+
+.grid-background::before {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  transform: rotate(var(--grid-rotate));
+  transform-origin: center;
+  will-change: background-position, transform;
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.16) 0,
+      rgba(255, 255, 255, 0.16) 1px,
+      transparent 1px,
+      transparent 18px
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.16) 0,
+      rgba(255, 255, 255, 0.16) 1px,
+      transparent 1px,
+      transparent 18px
+    );
+  background-size: 18px 18px;
+  background-position: 0 0;
+  opacity: 0.38;
+  animation: grid-drift 36s linear infinite;
+}
+
+.grid-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: screen;
+  background-image: radial-gradient(
+    circle var(--grid-glow-size) at var(--grid-cursor-x) var(--grid-cursor-y),
+    rgba(185, 185, 185, 0.18) 0%,
+    rgba(185, 185, 185, 0.18) 18%,
+    rgba(165, 165, 165, 0.22) 38%,
+    rgba(145, 145, 145, 0.2) 56%,
+    transparent 78%
+  );
+  opacity: var(--grid-glow-opacity);
+  transition: opacity 0.12s ease;
+  filter: blur(1px);
+}
+
+@keyframes grid-drift {
+  from {
+    background-position: 0 0, 0 0;
+  }
+  to {
+    background-position: var(--grid-drift-x) var(--grid-drift-y),
+      var(--grid-drift-x) var(--grid-drift-y);
+  }
+}
+
+@media (max-width: 700px) {
+  .grid-background::before {
+    background-size: 16px 16px;
+  }
+
+  .grid-background::after {
+    --grid-glow-size: 130px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid-background::before {
+    animation: none;
+  }
+
+  .grid-background::after {
+    animation: none;
+  }
+}

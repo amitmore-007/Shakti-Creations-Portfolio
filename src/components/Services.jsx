@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./Services.css";
+import GridBackground from "./GridBackground";
 import serviceModelImage from "../assets/service-model.webp";
 import serviceTravelImage from "../assets/service-travel.webp";
 import serviceBrandImage from "../assets/gallery-6.webp";
@@ -100,7 +101,8 @@ export default function Services() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="services" id="services">
+    <section ref={sectionRef} className="services grid-host" id="services">
+      <GridBackground direction="up-left" />
       <div className="services-header" ref={headerRef}>
         <span className="section-label" data-text-fx>
           Services

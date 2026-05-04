@@ -24,11 +24,24 @@
   mix-blend-mode: screen;
   opacity: 0.1;
   pointer-events: none;
+  z-index: 0;
 }
 
 .video-showcase > * {
   position: relative;
   z-index: 2;
+}
+
+.video-showcase > .grid-background {
+  z-index: 1;
+}
+
+.video-showcase .video-showcase-grid::before {
+  opacity: 0.65;
+}
+
+.video-showcase .video-showcase-grid {
+  filter: contrast(1.15);
 }
 
 .video-showcase-header {

@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./Testimonials.css";
+import GridBackground from "./GridBackground";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -126,7 +127,8 @@ export default function Testimonials() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="testimonials">
+    <section ref={sectionRef} className="testimonials grid-host">
+      <GridBackground direction="right" />
       <div ref={headingRef} className="testimonials-header">
         <span className="section-label" data-text-fx>
           Testimonials

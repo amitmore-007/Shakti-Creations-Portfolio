@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./About.css";
+import GridBackground from "./GridBackground";
 import aboutPortrait from "../assets/about-portrait.webp";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -142,7 +143,8 @@ export default function About() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="about" id="about">
+    <section ref={sectionRef} className="about grid-host" id="about">
+      <GridBackground direction="left" />
       {/* Marquee top */}
       <div className="marquee-wrap">
         <div ref={marqueeRef} className="marquee-track">

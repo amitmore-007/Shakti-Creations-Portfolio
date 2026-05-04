@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import gsap from "gsap";
 import "./CardGallery.css";
+import GridBackground from "./GridBackground";
 import gallery1 from "../assets/gallery-1.webp";
 import gallery2 from "../assets/gallery-2.webp";
 import gallery3 from "../assets/gallery-3.webp";
@@ -315,7 +316,8 @@ export default function CardGallery({ onViewAll }) {
   };
 
   return (
-    <section ref={sectionRef} className="card-gallery">
+    <section ref={sectionRef} className="card-gallery grid-host">
+      <GridBackground direction="right" />
       {/* Focused overlay backdrop */}
       <div
         className={`gallery-backdrop ${focusedId && !isMobileLayout ? "active" : ""}`}

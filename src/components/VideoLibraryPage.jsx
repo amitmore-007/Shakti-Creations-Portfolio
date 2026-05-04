@@ -4,13 +4,18 @@ import React, {
   useMemo,
   useRef,
   useState,
+  forwardRef,
+  useImperativeHandle,
 } from "react";
 import gsap from "gsap";
 import CustomCursor from "./CustomCursor";
 import { VIDEO_CATEGORIES, VIDEO_LIBRARY } from "../data/videoLibrary";
 import "./VideoLibraryPage.css";
 
-export default function VideoLibraryPage({ isOpen = true, onClose }) {
+const VideoLibraryPage = forwardRef(function VideoLibraryPage(
+  { isOpen = true, onClose },
+  ref,
+) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeVideo, setActiveVideo] = useState(null);
   const isOverlayMode = typeof onClose === "function";
@@ -53,6 +58,14 @@ export default function VideoLibraryPage({ isOpen = true, onClose }) {
       onComplete: onClose,
     });
   }, [isOverlayMode, onClose]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      close: handleClose,
+    }),
+    [handleClose],
+  );
 
   useEffect(() => {
     if (isOverlayMode) return;
@@ -150,7 +163,7 @@ export default function VideoLibraryPage({ isOpen = true, onClose }) {
 
   return (
     <div
-      className={`video-library-page${isOverlayMode ? " overlay-mode" : ""}`}
+      className={`video-library-page grid-host${isOverlayMode ? " overlay-mode" : ""}`}
       ref={pageRef}
       data-lenis-prevent={isOverlayMode ? "" : undefined}
     >
@@ -310,4 +323,6 @@ export default function VideoLibraryPage({ isOpen = true, onClose }) {
       )}
     </div>
   );
-}
+});
+
+export default VideoLibraryPage;

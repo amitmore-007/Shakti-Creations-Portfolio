@@ -1,12 +1,17 @@
 import React from "react";
 import "./VideoShowcase.css";
+import GridBackground from "./GridBackground";
 import { VIDEO_LIBRARY } from "../data/videoLibrary";
 
 const FEATURED_VIDEOS = VIDEO_LIBRARY.slice(0, 3);
 
 export default function VideoShowcase({ onViewAll }) {
   return (
-    <section className="video-showcase" id="videos">
+    <section className="video-showcase grid-host" id="videos">
+      <GridBackground
+        direction="left"
+        className="grid-background--front video-showcase-grid"
+      />
       <div className="video-showcase-header">
         <span className="section-label">Motion Archive</span>
         <h2 className="video-showcase-title">

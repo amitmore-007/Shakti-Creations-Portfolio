@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./CubeShowcase.css";
+import GridBackground from "./GridBackground";
 import cubeImage1 from "../assets/gallery-1.webp";
 import cubeImage2 from "../assets/gallery-2.webp";
 import cubeImage3 from "../assets/service-travel.webp";
@@ -135,8 +136,9 @@ export default function CubeShowcase() {
   return (
     <section
       ref={sectionRef}
-      className={`cube-section${isVisible ? " is-visible" : ""}`}
+      className={`cube-section grid-host${isVisible ? " is-visible" : ""}`}
     >
+      <GridBackground direction="up-right" />
       <div
         className="stack-stage"
         aria-label="Scroll animated stacked media showcase"

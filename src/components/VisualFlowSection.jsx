@@ -2,6 +2,7 @@ import React, { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./VisualFlowSection.css";
+import GridBackground from "./GridBackground";
 import frame1 from "../assets/gallery-1.webp";
 import frame2 from "../assets/gallery-2.webp";
 import frame3 from "../assets/gallery-3.webp";
@@ -163,7 +164,12 @@ export default function VisualFlowSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="visual-flow" id="visual-flow">
+    <section
+      ref={sectionRef}
+      className="visual-flow grid-host"
+      id="visual-flow"
+    >
+      <GridBackground direction="up-left" />
       <div className="visual-flow-sticky">
         <span className="visual-flow-label">Signature Frames</span>
 
