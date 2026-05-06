@@ -11,7 +11,6 @@ import "./GalleryPage.css";
 
 import gallery1 from "../assets/gallery-1.webp";
 import gallery2 from "../assets/gallery-2.webp";
-import gallery3 from "../assets/gallery-3.webp";
 import gallery4 from "../assets/gallery-4.webp";
 import gallery5 from "../assets/gallery-5.webp";
 import gallery6 from "../assets/gallery-6.webp";
@@ -35,6 +34,24 @@ const STRIP_A = Array(4)
 const STRIP_B = Array(4)
   .fill("EDITORIAL • LIFESTYLE • COMMERCIAL • FASHION • PORTRAIT • NATURE • ")
   .join("");
+
+const FOOD_IMAGES = Object.entries(
+  import.meta.glob("../assets/food_images/*.webp", {
+    eager: true,
+    import: "default",
+  }),
+)
+  .sort(([a], [b]) =>
+    a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }),
+  )
+  .map(([, src]) => src);
+
+const FOOD_PHOTOS = FOOD_IMAGES.map((src, index) => ({
+  id: 1000 + index,
+  src,
+  title: `Food Story ${String(index + 1).padStart(2, "0")}`,
+  cat: "Food",
+}));
 
 const ALL_PHOTOS = [
   // Models
@@ -60,16 +77,7 @@ const ALL_PHOTOS = [
   { id: 19, src: serviceTravel, title: "Old City Walls", cat: "Travel" },
   { id: 20, src: gallery4, title: "Sunrise Valley", cat: "Travel" },
   // Food
-  { id: 21, src: gallery3, title: "Spice Market", cat: "Food" },
-  { id: 22, src: gallery6, title: "Street Bites", cat: "Food" },
-  { id: 23, src: gallery3, title: "Fine Dining", cat: "Food" },
-  { id: 24, src: gallery6, title: "Farm Fresh", cat: "Food" },
-  { id: 25, src: gallery3, title: "Monsoon Chai", cat: "Food" },
-  { id: 26, src: gallery6, title: "Plate Stories", cat: "Food" },
-  { id: 27, src: gallery3, title: "Sweet Endings", cat: "Food" },
-  { id: 28, src: gallery6, title: "Kitchen Tales", cat: "Food" },
-  { id: 29, src: gallery3, title: "Garden Harvest", cat: "Food" },
-  { id: 30, src: gallery6, title: "Chef's Table", cat: "Food" },
+  ...FOOD_PHOTOS,
   // Architecture
   { id: 31, src: gallery6, title: "Glass Tower", cat: "Architecture" },
   { id: 32, src: gallery5, title: "Heritage Facade", cat: "Architecture" },
@@ -219,26 +227,11 @@ const GalleryPage = forwardRef(function GalleryPage({ isOpen, onClose }, ref) {
     (cat) => {
       if (cat === activeCategory || isChanging.current) return;
       isChanging.current = true;
+      setActiveCategory(cat);
 
-      const items = gridRef.current?.querySelectorAll(".gp-photo-item");
-      const doChange = () => {
-        setActiveCategory(cat);
+      window.setTimeout(() => {
         isChanging.current = false;
-      };
-
-      if (items?.length) {
-        gsap.to(items, {
-          y: -28,
-          opacity: 0,
-          scale: 0.94,
-          stagger: 0.022,
-          duration: 0.22,
-          ease: "power2.in",
-          onComplete: doChange,
-        });
-      } else {
-        doChange();
-      }
+      }, 180);
     },
     [activeCategory],
   );
@@ -332,6 +325,16 @@ const GalleryPage = forwardRef(function GalleryPage({ isOpen, onClose }, ref) {
                     alt={photo.title}
                     loading="lazy"
                     decoding="async"
+                    onLoad={(e) => {
+                      e.currentTarget.classList.add("img-loaded");
+                      e.currentTarget.parentElement?.classList.add("img-loaded");
+                    }}
+                    ref={(el) => {
+                      if (el?.complete && el.naturalWidth > 0) {
+                        el.classList.add("img-loaded");
+                        el.parentElement?.classList.add("img-loaded");
+                      }
+                    }}
                   />
                   <div className="gp-photo-overlay">
                     <span className="gp-photo-cat-label">{photo.cat}</span>
