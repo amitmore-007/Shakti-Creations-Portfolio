@@ -9,12 +9,9 @@ import React, {
 import gsap from "gsap";
 import "./GalleryPage.css";
 
-import gallery1 from "../assets/gallery-1.webp";
-import gallery2 from "../assets/gallery-2.webp";
 import gallery4 from "../assets/gallery-4.webp";
 import gallery5 from "../assets/gallery-5.webp";
 import gallery6 from "../assets/gallery-6.webp";
-import serviceModel from "../assets/service-model.webp";
 import serviceTravel from "../assets/service-travel.webp";
 import aboutPortrait from "../assets/about-portrait.webp";
 
@@ -35,16 +32,24 @@ const STRIP_B = Array(4)
   .fill("EDITORIAL • LIFESTYLE • COMMERCIAL • FASHION • PORTRAIT • NATURE • ")
   .join("");
 
-const FOOD_IMAGES = Object.entries(
-  import.meta.glob("../assets/food_images/*.webp", {
-    eager: true,
-    import: "default",
-  }),
-)
-  .sort(([a], [b]) =>
-    a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }),
-  )
-  .map(([, src]) => src);
+const globToSortedSrcs = (glob) =>
+  Object.entries(glob)
+    .sort(([a], [b]) =>
+      a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }),
+    )
+    .map(([, src]) => src);
+
+const FOOD_IMAGES = globToSortedSrcs(
+  import.meta.glob("../assets/food_images/*.webp", { eager: true, import: "default" }),
+);
+
+const MODEL_IMAGES = globToSortedSrcs(
+  import.meta.glob("../assets/models/*.webp", { eager: true, import: "default" }),
+);
+
+const ARCH_IMAGES = globToSortedSrcs(
+  import.meta.glob("../assets/architecture/*.webp", { eager: true, import: "default" }),
+);
 
 const FOOD_PHOTOS = FOOD_IMAGES.map((src, index) => ({
   id: 1000 + index,
@@ -53,18 +58,23 @@ const FOOD_PHOTOS = FOOD_IMAGES.map((src, index) => ({
   cat: "Food",
 }));
 
+const MODEL_PHOTOS = MODEL_IMAGES.map((src, index) => ({
+  id: 2000 + index,
+  src,
+  title: `Model Story ${String(index + 1).padStart(2, "0")}`,
+  cat: "Models",
+}));
+
+const ARCH_PHOTOS = ARCH_IMAGES.map((src, index) => ({
+  id: 3000 + index,
+  src,
+  title: `Architecture ${String(index + 1).padStart(2, "0")}`,
+  cat: "Architecture",
+}));
+
 const ALL_PHOTOS = [
-  // Models
-  { id: 1, src: gallery1, title: "Monsoon Editorial", cat: "Models" },
-  { id: 2, src: gallery2, title: "Studio Noir", cat: "Models" },
-  { id: 3, src: serviceModel, title: "Dusk Rooftop", cat: "Models" },
-  { id: 4, src: aboutPortrait, title: "Golden Frame", cat: "Models" },
-  { id: 5, src: gallery1, title: "Urban Story", cat: "Models" },
-  { id: 6, src: gallery2, title: "Night Vision", cat: "Models" },
-  { id: 7, src: serviceModel, title: "Soft Light", cat: "Models" },
-  { id: 8, src: aboutPortrait, title: "Street Pose", cat: "Models" },
-  { id: 9, src: gallery1, title: "Bloom Campaign", cat: "Models" },
-  { id: 10, src: gallery2, title: "Minimal Frame", cat: "Models" },
+  // Models — real images from assets/models
+  ...MODEL_PHOTOS,
   // Travel
   { id: 11, src: gallery4, title: "Rajasthan Gold", cat: "Travel" },
   { id: 12, src: gallery5, title: "Kerala Aerial", cat: "Travel" },
@@ -78,39 +88,30 @@ const ALL_PHOTOS = [
   { id: 20, src: gallery4, title: "Sunrise Valley", cat: "Travel" },
   // Food
   ...FOOD_PHOTOS,
-  // Architecture
-  { id: 31, src: gallery6, title: "Glass Tower", cat: "Architecture" },
-  { id: 32, src: gallery5, title: "Heritage Facade", cat: "Architecture" },
-  { id: 33, src: gallery4, title: "Modern Arch", cat: "Architecture" },
-  { id: 34, src: gallery6, title: "Steel & Sky", cat: "Architecture" },
-  { id: 35, src: gallery5, title: "Corridor Light", cat: "Architecture" },
-  { id: 36, src: gallery4, title: "Dome Interior", cat: "Architecture" },
-  { id: 37, src: gallery6, title: "Minimalist Home", cat: "Architecture" },
-  { id: 38, src: gallery5, title: "Rooftop Garden", cat: "Architecture" },
-  { id: 39, src: gallery4, title: "Bridge Lines", cat: "Architecture" },
-  { id: 40, src: gallery6, title: "Staircase Study", cat: "Architecture" },
+  // Architecture — real images from assets/architecture
+  ...ARCH_PHOTOS,
   // Portraits
   { id: 41, src: aboutPortrait, title: "Contemplation", cat: "Portraits" },
-  { id: 42, src: gallery1, title: "Window Light", cat: "Portraits" },
-  { id: 43, src: gallery2, title: "Silhouette", cat: "Portraits" },
+  { id: 42, src: gallery4, title: "Window Light", cat: "Portraits" },
+  { id: 43, src: gallery5, title: "Silhouette", cat: "Portraits" },
   { id: 44, src: aboutPortrait, title: "Close Up", cat: "Portraits" },
-  { id: 45, src: gallery1, title: "Expression", cat: "Portraits" },
-  { id: 46, src: gallery2, title: "Golden Hour", cat: "Portraits" },
+  { id: 45, src: gallery4, title: "Expression", cat: "Portraits" },
+  { id: 46, src: gallery5, title: "Golden Hour", cat: "Portraits" },
   { id: 47, src: aboutPortrait, title: "Urban Soul", cat: "Portraits" },
-  { id: 48, src: gallery1, title: "Rain Portrait", cat: "Portraits" },
-  { id: 49, src: gallery2, title: "Candid Moment", cat: "Portraits" },
+  { id: 48, src: gallery4, title: "Rain Portrait", cat: "Portraits" },
+  { id: 49, src: gallery5, title: "Candid Moment", cat: "Portraits" },
   { id: 50, src: aboutPortrait, title: "Soft Focus", cat: "Portraits" },
   // Events
-  { id: 51, src: gallery2, title: "Wedding Story", cat: "Events" },
+  { id: 51, src: gallery5, title: "Wedding Story", cat: "Events" },
   { id: 52, src: gallery5, title: "Concert Night", cat: "Events" },
   { id: 53, src: gallery6, title: "Product Launch", cat: "Events" },
-  { id: 54, src: gallery2, title: "Gala Evening", cat: "Events" },
+  { id: 54, src: gallery5, title: "Gala Evening", cat: "Events" },
   { id: 55, src: gallery5, title: "Corporate Day", cat: "Events" },
   { id: 56, src: gallery6, title: "Birthday Bash", cat: "Events" },
-  { id: 57, src: gallery2, title: "Fashion Show", cat: "Events" },
+  { id: 57, src: gallery5, title: "Fashion Show", cat: "Events" },
   { id: 58, src: gallery5, title: "Art Exhibition", cat: "Events" },
   { id: 59, src: gallery6, title: "Sports Event", cat: "Events" },
-  { id: 60, src: gallery2, title: "Award Night", cat: "Events" },
+  { id: 60, src: gallery5, title: "Award Night", cat: "Events" },
 ];
 
 const GalleryPage = forwardRef(function GalleryPage({ isOpen, onClose }, ref) {
